@@ -1,2 +1,2 @@
 # TheFuni
-The funi design system
+The funi design system.
