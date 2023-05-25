@@ -12,6 +12,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -31,16 +33,39 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setSystemBarsColor(Color.Transparent, darkIcons = false)
             }
 
+            val screenHeightPx = with(LocalDensity.current) {
+                LocalConfiguration.current.screenHeightDp.dp.toPx()
+            }
+
+            val screenWidthPx = with(LocalDensity.current) {
+                LocalConfiguration.current.screenWidthDp.dp.toPx()
+            }
+
+            val initialHorizontalPaddingPx = 200f
+            val initialHorizontalPaddingDp = with(LocalDensity.current) {
+                initialHorizontalPaddingPx.toDp()
+            }
+
             TheFuniTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     BottomSheet(
-                        content = { Text(text = "Hello", modifier = Modifier.fillMaxHeight().padding(24.dp)) },
-                        cornerRadius = 32f,
-                        sheetColor = Color.Green
-                    )
+                        cornerRadius = 100f,
+                        sheetColor = Color.Green,
+                        screenHeightPx = screenHeightPx,
+                        screenWidthPx = screenWidthPx,
+                        initialHorizontalPadding = 200f
+                    ) {
+                        Text(
+                            text = "Hello",
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(vertical = 24.dp)
+                                .padding(horizontal = initialHorizontalPaddingDp/2 + 6.dp)
+                        )
+                    }
                 }
             }
         }

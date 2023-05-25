@@ -1,7 +1,6 @@
 package com.imashnake.thefuni.components.containment
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
@@ -52,11 +51,14 @@ fun BottomSheet(
     cornerRadius: Float,
     scrimColor: Color = Color.Black.copy(alpha = 0.5f),
     sheetColor: Color,
+    screenHeightPx: Float,
+    screenWidthPx: Float,
+    initialHorizontalPadding: Float,
     anchors: Map<Float, BottomSheetState> = mapOf(
         // TODO: Why is this the other way around?
         0f to BottomSheetState.EXPANDED,
-        with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx()/2 }.toFloat() to BottomSheetState.PEEK,
-        with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }.toFloat() to BottomSheetState.HIDDEN,
+        screenHeightPx/2 to BottomSheetState.PEEK,
+        screenHeightPx to BottomSheetState.HIDDEN,
     ),
     bottomSheetSwipeableState: SwipeableState<BottomSheetState> = rememberSwipeableState(
         BottomSheetState.HIDDEN
@@ -75,13 +77,9 @@ fun BottomSheet(
             .fillMaxSize()
             .drawBehind { drawRect(animatedScrimColor) }
     ) {
-        val progress = bottomSheetSwipeableState.offset.value/(with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }.toFloat())
-        val animatedHorizontalPadding = (progress * 16).dp
-        val animatedCornerRadius = (progress * cornerRadius).dp
         Column(
             modifier
                 .statusBarsPadding()
-                .padding(horizontal = animatedHorizontalPadding)
                 .align(Alignment.BottomCenter)
                 .swipeable(
                     state = bottomSheetSwipeableState,
@@ -91,10 +89,29 @@ fun BottomSheet(
                     resistance = ResistanceConfig(Float.MIN_VALUE),
                     orientation = Orientation.Vertical
                 )
-                .offset { IntOffset(0, bottomSheetSwipeableState.offset.value.roundToInt()) }
+                .drawBehind {
+                    drawRoundRect(
+                        color = sheetColor,
+                        size = Size(
+                            width = screenWidthPx - (bottomSheetSwipeableState.offset.value/screenHeightPx) * initialHorizontalPadding,
+                            height = screenHeightPx
+                        ),
+                        cornerRadius = CornerRadius(
+                            bottomSheetSwipeableState.offset.value/screenHeightPx * cornerRadius
+                        ),
+                        topLeft = Offset(
+                            x = (bottomSheetSwipeableState.offset.value/screenHeightPx) * initialHorizontalPadding/2,
+                            y = bottomSheetSwipeableState.offset.value/screenHeightPx * screenHeightPx
+                        )
+                    )
+                }
+                .offset {
+                    IntOffset(
+                        x = 0,
+                        y = bottomSheetSwipeableState.offset.value.roundToInt()
+                    )
+                }
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = animatedCornerRadius, topEnd = animatedCornerRadius))
-                .background(sheetColor)
         ) {
             handle()
             content()
