@@ -33,18 +33,7 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setSystemBarsColor(Color.Transparent, darkIcons = false)
             }
 
-            val screenHeightPx = with(LocalDensity.current) {
-                LocalConfiguration.current.screenHeightDp.dp.toPx()
-            }
-
-            val screenWidthPx = with(LocalDensity.current) {
-                LocalConfiguration.current.screenWidthDp.dp.toPx()
-            }
-
             val initialHorizontalPaddingPx = 200f
-            val initialHorizontalPaddingDp = with(LocalDensity.current) {
-                initialHorizontalPaddingPx.toDp()
-            }
 
             TheFuniTheme {
                 Surface(
@@ -52,18 +41,13 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     BottomSheet(
-                        cornerRadius = 100f,
+                        initialCornerRadius = 100f,
                         sheetColor = Color.Green,
-                        screenHeightPx = screenHeightPx,
-                        screenWidthPx = screenWidthPx,
-                        initialHorizontalPadding = 200f
+                        initialHorizontalPaddingPx = initialHorizontalPaddingPx
                     ) {
                         Text(
                             text = "Hello",
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(vertical = 24.dp)
-                                .padding(horizontal = initialHorizontalPaddingDp/2 + 6.dp)
+                            modifier = Modifier.fillMaxHeight()
                         )
                     }
                 }

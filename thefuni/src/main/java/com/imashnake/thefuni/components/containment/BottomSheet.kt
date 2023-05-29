@@ -29,6 +29,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
@@ -48,14 +50,17 @@ fun BottomSheet(
                 .align(Alignment.CenterHorizontally)
         ) {  }
     },
-    cornerRadius: Float,
+    initialCornerRadius: Float,
     scrimColor: Color = Color.Black.copy(alpha = 0.5f),
     sheetColor: Color,
-    screenHeightPx: Float,
-    screenWidthPx: Float,
-    initialHorizontalPadding: Float,
+    screenHeightPx: Float = with(LocalDensity.current) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx()
+    },
+    screenWidthPx: Float = with(LocalDensity.current) {
+        LocalConfiguration.current.screenWidthDp.dp.toPx()
+    },
+    initialHorizontalPaddingPx: Float,
     anchors: Map<Float, BottomSheetState> = mapOf(
-        // TODO: Why is this the other way around?
         0f to BottomSheetState.EXPANDED,
         screenHeightPx/2 to BottomSheetState.PEEK,
         screenHeightPx to BottomSheetState.HIDDEN,
@@ -71,6 +76,8 @@ fun BottomSheet(
         } else scrimColor,
         label = "animate_scrim_color"
     )
+
+    val initialHorizontalPadding = with(LocalDensity.current) { initialHorizontalPaddingPx.toDp() }
 
     Box(
         Modifier
@@ -90,18 +97,19 @@ fun BottomSheet(
                     orientation = Orientation.Vertical
                 )
                 .drawBehind {
+                    val progress = bottomSheetSwipeableState.offset.value/screenHeightPx
                     drawRoundRect(
                         color = sheetColor,
                         size = Size(
-                            width = screenWidthPx - (bottomSheetSwipeableState.offset.value/screenHeightPx) * initialHorizontalPadding,
+                            width = screenWidthPx - progress * initialHorizontalPaddingPx,
                             height = screenHeightPx
                         ),
                         cornerRadius = CornerRadius(
-                            bottomSheetSwipeableState.offset.value/screenHeightPx * cornerRadius
+                            progress * initialCornerRadius
                         ),
                         topLeft = Offset(
-                            x = (bottomSheetSwipeableState.offset.value/screenHeightPx) * initialHorizontalPadding/2,
-                            y = bottomSheetSwipeableState.offset.value/screenHeightPx * screenHeightPx
+                            x = progress * initialHorizontalPaddingPx/2,
+                            y = progress * screenHeightPx
                         )
                     )
                 }
@@ -114,7 +122,9 @@ fun BottomSheet(
                 .fillMaxWidth()
         ) {
             handle()
-            content()
+            Box(Modifier.padding(horizontal = initialHorizontalPadding/2)) {
+                content()
+            }
         }
     }
 }
